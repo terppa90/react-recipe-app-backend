@@ -26,9 +26,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // true vain HTTPS:llä
-      httpOnly: true,
-      sameSite: 'lax',
+      // secure: false, // true vain HTTPS:llä
+      secure: true, // true vain HTTPS:llä
+      // httpOnly: true,
+      // sameSite: 'lax',
+      sameSite: 'none',
     },
   })
 );
