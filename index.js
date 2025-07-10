@@ -12,7 +12,7 @@ const app = express();
 app.use(
   cors({
     // origin: 'http://localhost:5173',
-    origin: 'https://react-recipe-app-2025.netlify.app/',
+    origin: 'https://react-recipe-app-2025.netlify.app',
     credentials: true,
   })
 );
