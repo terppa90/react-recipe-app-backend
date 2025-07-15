@@ -102,7 +102,11 @@ export const updateRecipe = async (req, res) => {
     recipe.title = req.body.title;
     recipe.ingredients = req.body.ingredients;
     recipe.instructions = req.body.instructions;
-    recipe.image = req.body.image;
+    // recipe.image = req.body.image;
+
+    if (req.body.hasOwnProperty('image')) {
+      recipe.image = req.body.image;
+    }
 
     await recipe.save();
 
