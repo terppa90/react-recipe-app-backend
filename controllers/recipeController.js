@@ -81,41 +81,6 @@ export const deleteRecipe = async (req, res) => {
   }
 };
 
-// export const deleteRecipe = async (req, res) => {
-//   const { id } = req.params;
-
-//   if (!mongoose.Types.ObjectId.isValid(id))
-//     return res.status(404).send(`No recipe with id: ${id}`);
-
-//   try {
-//     await Recipe.findByIdAndDelete(id);
-//   } catch (err) {
-//     res.status(500).json({ error: 'Poisto epäonnistui' });
-//   }
-
-//   res.json({ message: 'Recipe deleted successfully.' });
-// };
-
-// export const deleteRecipe = async (req, res) => {
-//   try {
-//     await Recipe.findByIdAndDelete(req.params.id);
-//     res.status(204).end();
-//   } catch (err) {
-//     res.status(500).json({ error: 'Poisto epäonnistui' });
-//   }
-// };
-
-// export const updateRecipe = async (req, res) => {
-//   try {
-//     const updated = await Recipe.findByIdAndUpdate(req.params.id, req.body, {
-//       new: true,
-//     });
-//     res.json(updated);
-//   } catch (err) {
-//     res.status(500).json({ error: 'Päivitys epäonnistui' });
-//   }
-// };
-
 export const updateRecipe = async (req, res) => {
   const recipeId = req.params.id;
 
