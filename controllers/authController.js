@@ -36,7 +36,8 @@ export const login = async (req, res) => {
       .cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
+        // sameSite: 'Strict', // lokaalisti
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({ message: 'Kirjautuminen onnistui' });
