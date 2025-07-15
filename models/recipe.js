@@ -27,18 +27,12 @@ const recipeSchema = mongoose.Schema({
   title: String,
   ingredients: String,
   instructions: String,
-  // images: [String],
   image: String,
-  // comments: [
-  //   {
-  //     username: String,
-  //     text: String,
-  //     createdAt: {
-  //       type: Date,
-  //       default: Date.now,
-  //     },
-  //   },
-  // ],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   reviews: [reviewSchema],
 });
 

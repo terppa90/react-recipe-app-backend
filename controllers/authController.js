@@ -6,7 +6,6 @@ import bcrypt from 'bcrypt';
 export const register = async (req, res) => {
   const { username, password } = req.body;
   try {
-    // const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, password });
     await user.save();
     res.status(201).json({ message: 'User created' });
@@ -17,41 +16,30 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  console.log('Login body: ', req.body);
-
   const { username, password } = req.body;
 
   try {
     const user = await User.findOne({ username });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ message: 'Virheellinen käyttäjätunnus tai salasana' });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Virheelliset tunnistetiedot' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: 'Virheellinen käyttäjätunnus tai salasana' });
-    }
+    const token = jwt.sign(
+      { id: user._id, username: user.username },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '7d',
+      }
+    );
 
-    req.session.user = {
-      id: user._id,
-      username: user.username,
-    };
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '3d',
-    });
-
-    console.error('Token:', token);
-
-    res.status(200).json({
-      _id: user._id,
-      username: user.username,
-      token,
-    });
+    res
+      .cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({ message: 'Kirjautuminen onnistui' });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Palvelinvirhe' });
@@ -59,21 +47,30 @@ export const login = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Logout error:', err);
-      return res.status(500).json({ message: 'Uloskirjautuminen epäonnistui' });
-    }
-    res.clearCookie('connect.sid'); // Varmuuden vuoksi
-    res.status(200).json({ message: 'Uloskirjauduttu onnistuneesti' });
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
   });
+  res.status(200).json({ message: 'Uloskirjauduttu onnistuneesti' });
 };
 
-export const getCurrentUser = (req, res) => {
-  console.log('Get current user: ', req.session.user);
-  if (req.session && req.session.user) {
-    res.status(200).json(req.session.user);
-  } else {
-    res.status(401).json({ message: 'Ei kirjautunut käyttäjä' });
+export const getCurrentUser = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res
+        .status(401)
+        .json({ message: 'Käyttäjä ei ole kirjautunut sisään' });
+    }
+
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'Käyttäjää ei löytynyt' });
+    }
+
+    res.json({ id: user._id, username: user.username });
+  } catch (err) {
+    console.error('Virhe haettaessa käyttäjää:', err);
+    res.status(500).json({ message: 'Palvelinvirhe käyttäjän haussa' });
   }
 };
